@@ -1,0 +1,10 @@
+con 5 augmentations e lr a 1:
+
+    con augmentations a caso --> 143, 155
+    con augmix --> 168
+    con augmix e somma --> 
+
+con 5 augmentations AdamW e somma 0.068:
+    con augmix --> 486
+    con augmix e 20 augmentations --> 507
+    con augmix e 40 augmentations --> 484 
