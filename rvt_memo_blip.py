@@ -77,7 +77,7 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
         image_test = Image.open(f"{i}")
 
         dizionario_blip = {}
-
+        """
         for img in immagini_aug:
             proc = process_image(img).to(device) # immagine processata
             output = model(proc)
@@ -120,7 +120,7 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
 
         mean_entropy.backward()
         optimizer.step()
-
+        """
         model.eval()
 
         with torch.no_grad():
