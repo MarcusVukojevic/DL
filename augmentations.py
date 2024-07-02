@@ -10,7 +10,8 @@ from torchvision import transforms
 import numpy as np
 from PIL import Image, ImageEnhance, ImageOps, ImageFilter
 import random
-
+from PIL import Image
+import concurrent.futures
 
 class ImageAugmentor:
     def __init__(self, augmentations=None):
@@ -32,32 +33,45 @@ class ImageAugmentor:
             augmented_images = [self.augmentations(image) for _ in range(n_augmentations)]
         return augmented_images
     
+
+
     def apply_all_augmentations(self, image_path):
         image = Image.open(image_path).convert('RGB')
         augmentations = []
 
-        augmentations.append(random_rotation(image, 30))
-        augmentations.append(random_crop(image, (int(image.width * 0.8), int(image.height * 0.8))))
-        augmentations.append(random_zoom(image, 0.8, 1.2))
-        augmentations.append(random_shift(image, 10, 10))
-        augmentations.append(shear_image(image, 0.2))
-        augmentations.append(adjust_brightness(image, 1.5))
-        augmentations.append(adjust_contrast(image, 1.5))
-        augmentations.append(adjust_saturation(image, 1.5))
-        augmentations.append(adjust_hue(image, 50))
-        augmentations.append(add_noise(image, 25))
-        augmentations.append(blur_image(image, 2))
-        augmentations.append(sharpen_image(image, 2))
-        augmentations.append(grayscale_image(image))
-        augmentations.append(cutout_image(image, 50))
-        augmentations.append(flip_image_horizontal(image))
-        augmentations.append(flip_image_vertical(image))
-        augmentations.append(rotate_image(image, 45))
-        augmentations.append(crop_image(image, (10, 10, image.width-10, image.height-10)))
-        augmentations.append(zoom_image(image, 1.1))
-        augmentations.append(shift_image(image, 5, 5))
+        def apply_augmentation(func, *args):
+            return func(*args)
+
+        tasks = [
+            (random_rotation, image, 30),
+            (random_crop, image, (int(image.width * 0.8), int(image.height * 0.8))),
+            (random_zoom, image, 0.8, 1.2),
+            (random_shift, image, 10, 10),
+            (shear_image, image, 0.2),
+            (adjust_brightness, image, 1.5),
+            (adjust_contrast, image, 1.5),
+            (adjust_saturation, image, 1.5),
+            (adjust_hue, image, 50),
+            (add_noise, image, 25),
+            (blur_image, image, 2),
+            (sharpen_image, image, 2),
+            (grayscale_image, image),
+            (cutout_image, image, 50),
+            (flip_image_horizontal, image),
+            (flip_image_vertical, image),
+            (rotate_image, image, 45),
+            (crop_image, image, (10, 10, image.width-10, image.height-10)),
+            (zoom_image, image, 1.1),
+            (shift_image, image, 5, 5)
+        ]
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = [executor.submit(apply_augmentation, task[0], *task[1:]) for task in tasks]
+            for future in concurrent.futures.as_completed(results):
+                augmentations.append(future.result())
 
         return augmentations
+
 
     def show_images(self, original_image, augmented_images):
         fig, axes = plt.subplots(1, len(augmented_images) + 1, figsize=(15, 5))

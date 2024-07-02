@@ -8,3 +8,12 @@ con 5 augmentations AdamW e somma 0.068:
     con augmix --> 486
     con augmix e 20 augmentations --> 507
     con augmix e 40 augmentations --> 484 
+
+
+con 20 aug AdamW e blip --> 552 --> 0.074 
+con random augs AdamW e blip --> 1056 --> 0.1417
+
+Best: 
+    Classificate correttamente 0.141744966442953
+    Numero immagini totali: 7450
+    Numero immagini classificate correttamente: 1056
