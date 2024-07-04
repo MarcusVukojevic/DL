@@ -66,7 +66,8 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
     numero_uguali = 0
 
     N = 16 # --> questo per la bn
-
+    
+    gugu = []
     for i in image_files:
         
         model.train()
@@ -84,6 +85,7 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
 
         dizionario_blip = {}
 
+        tmp = []
         for img in immagini_aug:
             proc = process_image(img).to(device) # immagine processata
             output = model(proc)
@@ -106,6 +108,8 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
                 # Stampa la risposta
                 risposta_blip = processor_blip.decode(out[0], skip_special_tokens=True)
 
+                tmp.append(risposta_blip)
+
                 dizionario_blip[class_idx[preds.item()]] = risposta_blip.lower()
 
                 if risposta_blip.lower() in ["yes", "there is", "correct", "true"]:
@@ -114,7 +118,8 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
                 
             #probabilities = torch.nn.functional.softmax(output[0], dim=0)
             lista_probabilità.append(output)
-       
+        
+        gugu.append(tmp)
         indice = 0
         for module in model.modules():
             if isinstance(module, torch.nn.BatchNorm2d):
@@ -155,6 +160,8 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
         dio += 1
     
     print(f"il numero d immagini che ho classificato come uguali per la classe ----> {true_label}: {numero_uguali}")
+    print(gugu)
+    exit()
 
 print(f"Classificate correttamente {numero_immagini_cls_corrette/numero_immagini_totali}")
 print(f"Numero immagini totali: {numero_immagini_totali}")

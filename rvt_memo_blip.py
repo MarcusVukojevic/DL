@@ -30,7 +30,7 @@ class_idx = json.loads(response.read().decode())
 model = resnext101_32x8d(weights=ResNeXt101_32X8D_Weights.DEFAULT).to(device)
 model.train()
 
-optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
+optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)
 
 pesi_modello = deepcopy(model.state_dict())
 
@@ -46,6 +46,7 @@ for module in model.modules():
 numero_immagini_totali = 0
 numero_immagini_cls_corrette = 0
 
+n_cartelle = 0
 for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
 
     image_folder = f'imagenet-a/{cartella}'
@@ -77,7 +78,7 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
         image_test = Image.open(f"{i}")
 
         dizionario_blip = {}
-        """
+        
         for img in immagini_aug:
             proc = process_image(img).to(device) # immagine processata
             output = model(proc)
@@ -120,7 +121,7 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
 
         mean_entropy.backward()
         optimizer.step()
-        """
+
         model.eval()
 
         with torch.no_grad():
@@ -136,6 +137,7 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
         dio += 1
     
     print(f"il numero d immagini che ho classificato come uguali per la classe ----> {true_label}: {numero_uguali}")
+    n_cartelle += 1
 
 print(f"Classificate correttamente {numero_immagini_cls_corrette/numero_immagini_totali}")
 print(f"Numero immagini totali: {numero_immagini_totali}")
