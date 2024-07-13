@@ -26,11 +26,20 @@ class ImageAugmentor:
             self.augmentations = augmentations
 
     def apply_augmentations(self, image_path, aug, n_augmentations):
+        # Carica e converte l'immagine in RGB
         image = Image.open(image_path).convert("RGB")
-        if aug:
-            augmented_images = [transforms.ToPILImage()(_augmix_aug(image)) for _ in range(5)]
-        else:
-            augmented_images = [self.augmentations(image) for _ in range(n_augmentations)]
+        
+        # Definisci una funzione helper per eseguire l'augmentazione
+        def augment_image(_):
+            if aug:
+                return transforms.ToPILImage()(_augmix_aug(image))
+            else:
+                return self.augmentations(image)
+        
+        # Usa ThreadPoolExecutor per eseguire le augmentazioni in parallelo
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            augmented_images = list(executor.map(augment_image, range(n_augmentations)))
+    
         return augmented_images
     
 
@@ -43,6 +52,46 @@ class ImageAugmentor:
             return func(*args)
 
         tasks = [
+            (random_rotation, image, 30),
+            (random_crop, image, (int(image.width * 0.8), int(image.height * 0.8))),
+            (random_zoom, image, 0.8, 1.2),
+            (random_shift, image, 10, 10),
+            (shear_image, image, 0.2),
+            (adjust_brightness, image, 1.5),
+            (adjust_contrast, image, 1.5),
+            (adjust_saturation, image, 1.5),
+            (adjust_hue, image, 50),
+            (add_noise, image, 25),
+            (blur_image, image, 2),
+            (sharpen_image, image, 2),
+            (grayscale_image, image),
+            (cutout_image, image, 50),
+            (flip_image_horizontal, image),
+            (flip_image_vertical, image),
+            (rotate_image, image, 45),
+            (crop_image, image, (10, 10, image.width-10, image.height-10)),
+            (zoom_image, image, 1.1),
+            (shift_image, image, 5, 5),
+            (random_rotation, image, 30),
+            (random_crop, image, (int(image.width * 0.8), int(image.height * 0.8))),
+            (random_zoom, image, 0.8, 1.2),
+            (random_shift, image, 10, 10),
+            (shear_image, image, 0.2),
+            (adjust_brightness, image, 1.5),
+            (adjust_contrast, image, 1.5),
+            (adjust_saturation, image, 1.5),
+            (adjust_hue, image, 50),
+            (add_noise, image, 25),
+            (blur_image, image, 2),
+            (sharpen_image, image, 2),
+            (grayscale_image, image),
+            (cutout_image, image, 50),
+            (flip_image_horizontal, image),
+            (flip_image_vertical, image),
+            (rotate_image, image, 45),
+            (crop_image, image, (10, 10, image.width-10, image.height-10)),
+            (zoom_image, image, 1.1),
+            (shift_image, image, 5, 5),
             (random_rotation, image, 30),
             (random_crop, image, (int(image.width * 0.8), int(image.height * 0.8))),
             (random_zoom, image, 0.8, 1.2),

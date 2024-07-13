@@ -9,7 +9,7 @@ from copy import deepcopy
 from tqdm import tqdm
 
 augmentator = ImageAugmentor()
-n_augmentations = 20
+n_augmentations = 64
 
 
 device = torch.device("mps:0" if torch.has_mps else "cpu")
@@ -19,7 +19,9 @@ LABELS_URL = "https://raw.githubusercontent.com/anishathalye/imagenet-simple-lab
 response = urllib.request.urlopen(LABELS_URL)
 class_idx = json.loads(response.read().decode())
 
-model = resnet50(weights=ResNet50_Weights.DEFAULT).to(device)
+model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1).to(device)
+# weights=models.ResNet50_Weights.IMAGENET1K_V1
+# weights=weights=ResNet50_Weights.DEFAULT
 model.train() 
 
 #optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
