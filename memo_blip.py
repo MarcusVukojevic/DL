@@ -1,4 +1,3 @@
-
 from augmentations import ImageAugmentor
 from torchvision.models import resnet50, ResNet50_Weights
 import torchvision.models as models
@@ -71,7 +70,6 @@ for cartella in tqdm(os.listdir(f"{esperimento}"), desc="Macinando classi"):
     image_files = [os.path.join(image_folder, img) for img in os.listdir(image_folder) if img.endswith('.jpg') or img.endswith('.png') or img.endswith(".jpeg")]
     numero_immagini_totali += len(image_files)
 
-    dio = 0
     numero_uguali = 0
 
     N = 16 # --> questo per la bn
@@ -165,8 +163,6 @@ for cartella in tqdm(os.listdir(f"{esperimento}"), desc="Macinando classi"):
                 numero_immagini_cls_corrette += 1
 
         model.load_state_dict(pesi_modello)
-
-        dio += 1
     
     print(f"il numero di immagini che ho classificato come uguali per la classe ----> {true_label}: {numero_uguali} su {len(image_files)}")
     #print(gugu)
