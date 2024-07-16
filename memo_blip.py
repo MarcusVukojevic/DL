@@ -8,11 +8,10 @@ import torch
 import urllib, json
 from copy import deepcopy
 from tqdm import tqdm
-
-
 from transformers import BlipProcessor, BlipForQuestionAnswering
 from PIL import Image
-import requests
+import torch.nn.functional as F
+
 
 # Carica il processore e il modello per VQA
 processor_blip = BlipProcessor.from_pretrained("Salesforce/blip-vqa-base")
@@ -35,14 +34,11 @@ LABELS_URL = "https://raw.githubusercontent.com/anishathalye/imagenet-simple-lab
 response = urllib.request.urlopen(LABELS_URL)
 class_idx = json.loads(response.read().decode())
 
-# model = resnet50(weights=ResNet50_Weights.DEFAULT).to(device)
-# model.train() 
-
-model = resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1).to(device)
+model = resnet50(weights=ResNet50_Weights.DEFAULT).to(device)
 model.train() 
 
-#optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
 optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
+
 
 pesi_modello = deepcopy(model.state_dict())
 
@@ -60,16 +56,19 @@ numero_immagini_cls_corrette = 0
 
 memo = True
 
-for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
+esperimento = "imagenetv2" #"imagenet-a" #" #imagenetv2 
 
-    image_folder = f'imagenet-a/{cartella}'
+for cartella in tqdm(os.listdir(f"{esperimento}"), desc="Macinando classi"):
+
+    image_folder = f'{esperimento}/{cartella}'
     
     if os.path.isdir(image_folder) == False:
         continue
-    true_label = get_class_label(image_folder[-9:])
-    # Lista delle immagini nella cartella
-    image_files = [os.path.join(image_folder, img) for img in os.listdir(image_folder) if img.endswith('.jpg') or img.endswith('.png')]
 
+    true_label = get_class_label(cartella) if esperimento == "imagenet-a" else class_idx[int(cartella)]
+    
+    # Lista delle immagini nella cartella
+    image_files = [os.path.join(image_folder, img) for img in os.listdir(image_folder) if img.endswith('.jpg') or img.endswith('.png') or img.endswith(".jpeg")]
     numero_immagini_totali += len(image_files)
 
     dio = 0
@@ -114,7 +113,7 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
                     # Prepara i dati
                     inputs = processor_blip(image_test, question, return_tensors="pt")
                     # Genera la risposta
-                    out = model_blip.generate(**inputs, max_length = 2)
+                    out = model_blip.generate(**inputs, max_length = 2, num_beams=1)
                     # Stampa la risposta
                     risposta_blip = processor_blip.decode(out[0], skip_special_tokens=True)
 
@@ -125,11 +124,12 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
                     if risposta_blip.lower() in ["yes", "there is", "correct", "true"]:
                         # Aumenta il valore delle probabilità della classe predetta dalla ResNet
                         output[0][preds.item()] += output[0][preds.item()] * 2
-                    
+
                 #probabilities = torch.nn.functional.softmax(output[0], dim=0)
                 lista_probabilità.append(output)
             
             gugu.append(tmp)
+
             indice = 0
             for module in model.modules():
                 if isinstance(module, torch.nn.BatchNorm2d):
@@ -160,7 +160,6 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
         with torch.no_grad():
             output = model(load_and_preprocess_image(i).to(device))
             _, preds = torch.max(output, 1)
-
             if (class_idx[preds.item()] == true_label):
                 numero_uguali += 1
                 numero_immagini_cls_corrette += 1
@@ -169,7 +168,7 @@ for cartella in tqdm(os.listdir("imagenet-a"), desc="Macinando classi"):
 
         dio += 1
     
-    print(f"il numero d immagini che ho classificato come uguali per la classe ----> {true_label}: {numero_uguali}")
+    print(f"il numero di immagini che ho classificato come uguali per la classe ----> {true_label}: {numero_uguali} su {len(image_files)}")
     #print(gugu)
     #exit()
 

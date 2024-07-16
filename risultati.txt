@@ -24,3 +24,14 @@ Resnext101 baseline -->
     Classificate correttamente 0.14966442953020134
     Numero immagini totali: 7450
     Numero immagini classificate correttamente: 1115
+
+
+Con imagenet-v2: 
+Senza Memo-blip:
+    Classificate correttamente 0.6958
+    Numero immagini totali: 10000
+    Numero immagini classificate correttamente: 6958
+
+    Classificate correttamente 0.7214
+    Numero immagini totali: 10000
+    Numero immagini classificate correttamente: 7214
